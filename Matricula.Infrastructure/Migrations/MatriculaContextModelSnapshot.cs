@@ -117,6 +117,9 @@ namespace Matricula.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("ShiftId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid");
 
@@ -124,6 +127,8 @@ namespace Matricula.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShiftId");
 
                     b.HasIndex("StudentId")
                         .IsUnique();
@@ -233,11 +238,17 @@ namespace Matricula.Infrastructure.Migrations
 
             modelBuilder.Entity("Matricula.Core.Entities.Enrollment", b =>
                 {
+                    b.HasOne("Matricula.Core.Entities.Shift", "Shift")
+                        .WithMany()
+                        .HasForeignKey("ShiftId");
+
                     b.HasOne("Matricula.Core.Entities.Student", "Student")
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Shift");
 
                     b.Navigation("Student");
                 });

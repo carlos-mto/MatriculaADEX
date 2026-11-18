@@ -10,4 +10,8 @@ public class Enrollment : BaseEntity
     public Guid StudentId { get; set; }
     [ForeignKey("StudentId")]
     public Student Student { get; set; }
+
+    public Guid? ShiftId { get; set; }
+    [ForeignKey("ShiftId")]
+    public Shift? Shift { get; set; }
 }

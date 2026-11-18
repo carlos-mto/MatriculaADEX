@@ -63,7 +63,7 @@ public class EnrollmentService
         await using var tx = await _ctx.Database.BeginTransactionAsync(ct);
         try
         {
-            var enrollment = new Enrollment { StudentId = studentId };
+            var enrollment = new Enrollment { StudentId = studentId, ShiftId = shiftId };
             _ctx.Enrollments.Add(enrollment);
             await _ctx.SaveChangesAsync(ct);
 

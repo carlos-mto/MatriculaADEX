@@ -164,20 +164,28 @@ $(document).ready(function () {
     $(".error_course").hide();
     $("#courseSelect").removeClass("error");
     if ($("#courseSelect option:selected").val()) {
-      var scheduleInStorage = $("input[name='schedule[]']")
-        .map(function () {
-          return $(this).val();
-        })
-        .toArray();
-
       var scheduleCurrent =
         $("#courseSelect option:selected").data("starttime") +
         "-" +
         $("#courseSelect option:selected").data("endtime");
 
-      console.log(jQuery.inArray(scheduleCurrent, scheduleInStorage));
+      var toMinutes = function (t) {
+        var p = String(t).split(":");
+        return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+      };
+      var newStart = toMinutes($("#courseSelect option:selected").data("starttime"));
+      var newEnd = toMinutes($("#courseSelect option:selected").data("endtime"));
+      var conflict = false;
+      $("#courses tr").each(function () {
+        var exStart = toMinutes($(this).find(".startTime").text());
+        var exEnd = toMinutes($(this).find(".endTime").text());
+        if (newStart < exEnd && exStart < newEnd) {
+          conflict = true;
+          return false;
+        }
+      });
 
-      if (jQuery.inArray(scheduleCurrent, scheduleInStorage) == 0) {
+      if (conflict) {
         alertPopup("El curso que trata de añadir coincide en el horario con otro curso añadido");
         return false;
       }

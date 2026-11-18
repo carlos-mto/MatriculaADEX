@@ -131,7 +131,7 @@ using (var scope = app.Services.CreateScope())
 
         ClassRoomCourse crc2 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleB1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("9:30:0"), EndTime = TimeSpan.Parse("10:30:0"), Capacity = 2 };
 
-        ClassRoomCourse crc3 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleC1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
+        ClassRoomCourse crc3 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleC1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("10:30:0"), EndTime = TimeSpan.Parse("11:30:0"), Capacity = 2 };
 
         ClassRoomCourse crc4 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleD1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("11:30:0"), EndTime = TimeSpan.Parse("12:30:0"), Capacity = 2 };
 
