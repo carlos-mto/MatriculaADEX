@@ -12,7 +12,7 @@ public class EnrollmentServiceTests
     public EnrollmentServiceTests(PostgresFixture db) => _db = db;
 
     // Each call uses its own context, as in a real request.
-    private async Task<EnrollmentResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> ids, string period = Period)
+    private async Task<OperationResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> ids, string period = Period)
     {
         await using var ctx = _db.CreateContext();
         return await new EnrollmentService(ctx).EnrollAsync(studentId, shiftId, ids, period);

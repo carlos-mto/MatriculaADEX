@@ -16,6 +16,9 @@ public class ClassRoomCourse : BaseEntity
     public Guid ShiftId { get; set; }
     [ForeignKey("ShiftId")]
     public Shift? Shift { get; set; }
+    public Guid? TeacherId { get; set; }
+    [ForeignKey("TeacherId")]
+    public Teacher? Teacher { get; set; }
     public int Cycle { get; set; }
 
     public int Capacity { get; set; }

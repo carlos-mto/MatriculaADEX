@@ -40,13 +40,33 @@ public class PostgresFixture : IAsyncLifetime
         return student;
     }
 
-    public async Task<ClassRoomCourse> AddCourseAsync(Shift shift, int cycle, string start, string end, int capacity = 10)
+    public async Task<Teacher> AddTeacherAsync(bool active = true)
+    {
+        await using var ctx = CreateContext();
+        var teacher = new Teacher { FullName = "Profe-" + Guid.NewGuid(), IsActive = active };
+        ctx.Teachers.Add(teacher);
+        await ctx.SaveChangesAsync();
+        return teacher;
+    }
+
+    public async Task<ClassRoom> AddRoomAsync()
+    {
+        await using var ctx = CreateContext();
+        var room = new ClassRoom { Name = "Aula-" + Guid.NewGuid() };
+        ctx.ClassRooms.Add(room);
+        await ctx.SaveChangesAsync();
+        return room;
+    }
+
+    public async Task<ClassRoomCourse> AddCourseAsync(Shift shift, int cycle, string start, string end, int capacity = 10, ClassRoom? room = null, Teacher? teacher = null)
     {
         await using var ctx = CreateContext();
         var crc = new ClassRoomCourse
         {
             Course = new Course { Name = "Curso-" + Guid.NewGuid() },
-            ClassRoom = new ClassRoom { Name = "Aula-" + Guid.NewGuid() },
+            ClassRoom = room is null ? new ClassRoom { Name = "Aula-" + Guid.NewGuid() } : null,
+            ClassRoomId = room?.Id ?? Guid.Empty,
+            TeacherId = teacher?.Id,
             ShiftId = shift.Id,
             Cycle = cycle,
             Capacity = capacity,

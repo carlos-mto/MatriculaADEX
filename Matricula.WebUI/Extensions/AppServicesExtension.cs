@@ -12,5 +12,10 @@ public static class AppServicesExtension
   {
     builder.Services.Configure<EnrollmentSettings>(builder.Configuration.GetSection("Enrollment"));
     builder.Services.AddScoped<EnrollmentService>();
+    builder.Services.AddScoped<PeriodService>();
+    builder.Services.AddScoped<ScheduleService>();
+    builder.Services.AddScoped<CatalogService>();
+    builder.Services.AddScoped<AdminUserService>();
+    builder.Services.AddScoped<DashboardService>();
   }
 }

@@ -177,14 +177,22 @@ using (var scope = app.Services.CreateScope())
 
         context.SaveChanges();
 
-        // AULA CURSO 1
-        ClassRoomCourse crc1 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleA1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
+        // PROFESORES
+        Teacher tAna = new Teacher { FullName = "Ana Gutiérrez", Email = "ana.gutierrez@adex.edu.pe", Specialty = "Matemáticas" };
+        Teacher tLuis = new Teacher { FullName = "Luis Ramírez", Email = "luis.ramirez@adex.edu.pe", Specialty = "Programación" };
+        Teacher tRosa = new Teacher { FullName = "Rosa Medina", Email = "rosa.medina@adex.edu.pe", Specialty = "Gestión" };
 
-        ClassRoomCourse crc2 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleB1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("9:30:0"), EndTime = TimeSpan.Parse("10:30:0"), Capacity = 2 };
+        context.Teachers.AddRange(tAna, tLuis, tRosa);
+        context.SaveChanges();
+
+        // AULA CURSO 1
+        ClassRoomCourse crc1 = new ClassRoomCourse { Teacher = tLuis, ClassRoom = classRoom2, Course = courseCycleA1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
+
+        ClassRoomCourse crc2 = new ClassRoomCourse { Teacher = tAna, ClassRoom = classRoom2, Course = courseCycleB1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("9:30:0"), EndTime = TimeSpan.Parse("10:30:0"), Capacity = 2 };
 
         ClassRoomCourse crc3 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleC1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("10:30:0"), EndTime = TimeSpan.Parse("11:30:0"), Capacity = 2 };
 
-        ClassRoomCourse crc4 = new ClassRoomCourse { ClassRoom = classRoom2, Course = courseCycleD1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("11:30:0"), EndTime = TimeSpan.Parse("12:30:0"), Capacity = 2 };
+        ClassRoomCourse crc4 = new ClassRoomCourse { Teacher = tRosa, ClassRoom = classRoom2, Course = courseCycleD1, Shift = sfm, Cycle = 1, StartTime = TimeSpan.Parse("11:30:0"), EndTime = TimeSpan.Parse("12:30:0"), Capacity = 2 };
 
         context.ClassRoomCourses.Add(crc1);
         context.ClassRoomCourses.Add(crc2);
@@ -195,11 +203,11 @@ using (var scope = app.Services.CreateScope())
         // AULA CURSO 2
         ClassRoomCourse cra1 = new ClassRoomCourse { ClassRoom = classRoom, Course = courseCycleA2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
 
-        ClassRoomCourse cra2 = new ClassRoomCourse { ClassRoom = classRoom, Course = courseCycleB2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("10:30:0"), EndTime = TimeSpan.Parse("12:30:0"), Capacity = 2 };
+        ClassRoomCourse cra2 = new ClassRoomCourse { Teacher = tLuis, ClassRoom = classRoom, Course = courseCycleB2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("10:30:0"), EndTime = TimeSpan.Parse("12:30:0"), Capacity = 2 };
 
-        ClassRoomCourse cra3 = new ClassRoomCourse { ClassRoom = classRoom, Course = courseCycleC2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("14:30:0"), EndTime = TimeSpan.Parse("15:30:0"), Capacity = 2 };
+        ClassRoomCourse cra3 = new ClassRoomCourse { Teacher = tRosa, ClassRoom = classRoom, Course = courseCycleC2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("14:30:0"), EndTime = TimeSpan.Parse("15:30:0"), Capacity = 2 };
 
-        ClassRoomCourse cra4 = new ClassRoomCourse { ClassRoom = classRoom, Course = courseCycleD2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("18:30:0"), EndTime = TimeSpan.Parse("19:30:0"), Capacity = 2 };
+        ClassRoomCourse cra4 = new ClassRoomCourse { Teacher = tAna, ClassRoom = classRoom, Course = courseCycleD2, Shift = sft, Cycle = 2, StartTime = TimeSpan.Parse("18:30:0"), EndTime = TimeSpan.Parse("19:30:0"), Capacity = 2 };
 
         context.ClassRoomCourses.Add(cra1);
         context.ClassRoomCourses.Add(cra2);
@@ -210,9 +218,9 @@ using (var scope = app.Services.CreateScope())
         // AULA CURSO 3
         ClassRoomCourse crx1 = new ClassRoomCourse { ClassRoom = classRoom3, Course = courseCycleA3, Shift = sfn, Cycle = 3, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
 
-        ClassRoomCourse crx2 = new ClassRoomCourse { ClassRoom = classRoom3, Course = courseCycleB3, Shift = sfn, Cycle = 3, StartTime = TimeSpan.Parse("18:30:0"), EndTime = TimeSpan.Parse("19:30:0"), Capacity = 2 };
+        ClassRoomCourse crx2 = new ClassRoomCourse { Teacher = tLuis, ClassRoom = classRoom3, Course = courseCycleB3, Shift = sfn, Cycle = 3, StartTime = TimeSpan.Parse("18:30:0"), EndTime = TimeSpan.Parse("19:30:0"), Capacity = 2 };
 
-        ClassRoomCourse crx3 = new ClassRoomCourse { ClassRoom = classRoom3, Course = courseCycleC3, Shift = sft, Cycle = 3, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
+        ClassRoomCourse crx3 = new ClassRoomCourse { Teacher = tRosa, ClassRoom = classRoom3, Course = courseCycleC3, Shift = sft, Cycle = 3, StartTime = TimeSpan.Parse("8:30:0"), EndTime = TimeSpan.Parse("9:30:0"), Capacity = 2 };
 
         ClassRoomCourse crx4 = new ClassRoomCourse { ClassRoom = classRoom3, Course = courseCycleD3, Shift = sfn, Cycle = 3, StartTime = TimeSpan.Parse("12:30:0"), EndTime = TimeSpan.Parse("13:30:0"), Capacity = 2 };
 

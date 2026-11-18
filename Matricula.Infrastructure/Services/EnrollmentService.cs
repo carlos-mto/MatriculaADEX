@@ -3,8 +3,6 @@ using Npgsql;
 
 namespace Matricula.Infrastructure.Services;
 
-public record EnrollmentResult(bool Success, string? Error);
-
 public class EnrollmentService
 {
     private readonly MatriculaContext _ctx;
@@ -14,9 +12,9 @@ public class EnrollmentService
         _ctx = ctx;
     }
 
-    private static EnrollmentResult Fail(string error) => new(false, error);
+    private static OperationResult Fail(string error) => OperationResult.Fail(error);
 
-    public async Task<EnrollmentResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> classRoomCourseIds, string period, CancellationToken ct = default)
+    public async Task<OperationResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> classRoomCourseIds, string period, CancellationToken ct = default)
     {
         if (classRoomCourseIds.Count == 0)
             return Fail("Debe agregar al menos un curso.");
@@ -89,7 +87,7 @@ public class EnrollmentService
 
             await _ctx.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
-            return new EnrollmentResult(true, null);
+            return OperationResult.Ok();
         }
         catch (DbUpdateException ex) when (!IsConflict(ex))
         {
@@ -102,6 +100,40 @@ public class EnrollmentService
         {
             await tx.RollbackAsync(ct);
             return Fail("Hubo un conflicto al registrar la matrícula, inténtelo nuevamente.");
+        }
+    }
+
+    public async Task<OperationResult> CancelAsync(Guid enrollmentId, CancellationToken ct = default)
+    {
+        await using var tx = await _ctx.Database.BeginTransactionAsync(ct);
+        try
+        {
+            var enrollment = await _ctx.Enrollments.FirstOrDefaultAsync(e => e.Id == enrollmentId, ct);
+            if (enrollment is null)
+                return Fail("La matrícula no existe.");
+
+            var crcIds = await _ctx.EnrollmentDetails
+                .Where(d => d.EnrollmentId == enrollmentId)
+                .Select(d => d.ClassRoomCourseId)
+                .ToListAsync(ct);
+
+            foreach (var id in crcIds)
+            {
+                await _ctx.ClassRoomCourses
+                    .Where(c => c.Id == id)
+                    .ExecuteUpdateAsync(s => s.SetProperty(c => c.Capacity, c => c.Capacity + 1)
+                        .SetProperty(c => c.UpdatedAt, DateTime.UtcNow), ct);
+            }
+
+            _ctx.Enrollments.Remove(enrollment);
+            await _ctx.SaveChangesAsync(ct);
+            await tx.CommitAsync(ct);
+            return OperationResult.Ok();
+        }
+        catch (Exception ex) when (IsConflict(ex))
+        {
+            await tx.RollbackAsync(ct);
+            return Fail("Hubo un conflicto al cancelar la matrícula, inténtelo nuevamente.");
         }
     }
 

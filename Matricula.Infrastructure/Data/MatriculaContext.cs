@@ -17,6 +17,8 @@ namespace Matricula.Infrastructure.Data
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ClassRoom> ClassRooms { get; set; }
         public DbSet<AdminUser> AdminUsers { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<AppSetting> AppSettings { get; set; }
 
         public MatriculaContext(){}
 
@@ -53,6 +55,17 @@ namespace Matricula.Infrastructure.Data
             modelBuilder.Entity<Enrollment>().HasIndex(e => new { e.StudentId, e.Period }).IsUnique();
             modelBuilder.Entity<AdminUser>().HasIndex(a => a.Username).IsUnique();
             modelBuilder.Entity<EnrollmentDetail>().HasIndex(d => new { d.EnrollmentId, d.ClassRoomCourseId }).IsUnique();
+            modelBuilder.Entity<Teacher>().HasIndex(t => t.Email).IsUnique().HasFilter("\"Email\" IS NOT NULL");
+            modelBuilder.Entity<AppSetting>().HasIndex(a => a.Key).IsUnique();
+
+            modelBuilder.Entity<Enrollment>().HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Enrollment>().HasOne(e => e.Shift).WithMany().HasForeignKey(e => e.ShiftId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<EnrollmentDetail>().HasOne(d => d.ClassRoomCourse).WithMany().HasForeignKey(d => d.ClassRoomCourseId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<EnrollmentDetail>().HasOne(d => d.Enrollment).WithMany().HasForeignKey(d => d.EnrollmentId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ClassRoomCourse>().HasOne(c => c.Course).WithMany().HasForeignKey(c => c.CourseId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClassRoomCourse>().HasOne(c => c.ClassRoom).WithMany().HasForeignKey(c => c.ClassRoomId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClassRoomCourse>().HasOne(c => c.Shift).WithMany().HasForeignKey(c => c.ShiftId).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ClassRoomCourse>().HasOne(c => c.Teacher).WithMany().HasForeignKey(c => c.TeacherId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

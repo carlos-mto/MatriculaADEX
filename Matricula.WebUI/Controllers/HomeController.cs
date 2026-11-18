@@ -4,7 +4,6 @@ using Matricula.WebUI.Models;
 using Matricula.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Options;
 
 namespace Matricula.WebUI.Controllers;
 
@@ -15,14 +14,14 @@ public class HomeController : Controller
 
   private MatriculaContext _context;
   private readonly EnrollmentService _enrollmentService;
-  private readonly EnrollmentSettings _enrollmentSettings;
+  private readonly PeriodService _periodService;
 
-  public HomeController(ILogger<HomeController> logger, MatriculaContext context, EnrollmentService enrollmentService, IOptions<EnrollmentSettings> enrollmentSettings)
+  public HomeController(ILogger<HomeController> logger, MatriculaContext context, EnrollmentService enrollmentService, PeriodService periodService)
   {
     _logger = logger;
     _enrollmentService = enrollmentService;
     _context = context;
-    _enrollmentSettings = enrollmentSettings.Value;
+    _periodService = periodService;
   }
 
   public SelectList getPopulateShifts()
@@ -57,6 +56,7 @@ public class HomeController : Controller
         CourseName = a.Course!.Name,
         ClassRoomName = a.ClassRoom!.Name,
         ShiftName = a.Shift!.Name,
+        TeacherName = a.Teacher != null ? a.Teacher.FullName : null,
         a.Capacity,
         a.StartTime,
         a.EndTime
@@ -69,6 +69,7 @@ public class HomeController : Controller
       courseName = a.CourseName,
       classRoomName = a.ClassRoomName,
       shiftName = a.ShiftName,
+      teacherName = a.TeacherName ?? "Por asignar",
       capacity = a.Capacity,
       startTime = a.StartTime.ToString(@"hh\:mm"),
       endTime = a.EndTime.ToString(@"hh\:mm")
@@ -96,7 +97,7 @@ public class HomeController : Controller
       courseIds.Add(id);
     }
 
-    var result = await _enrollmentService.EnrollAsync(model.studentSelect, model.shiftSelect, courseIds, _enrollmentSettings.ActivePeriod);
+    var result = await _enrollmentService.EnrollAsync(model.studentSelect, model.shiftSelect, courseIds, await _periodService.GetActivePeriodAsync());
     if (!result.Success)
     {
       TempData["Error"] = result.Error;
