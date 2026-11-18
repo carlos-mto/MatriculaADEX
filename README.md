@@ -14,6 +14,15 @@ docker compose up --build
 Abrir http://localhost:8080 e iniciar sesión con `ADMIN_USERNAME` / `ADMIN_PASSWORD` del `.env`.
 El usuario administrador se crea al primer arranque si aún no existe ninguno.
 
+## Estilos (Tailwind CSS v4)
+
+El frontend usa Tailwind con el CLI standalone (sin Node/npm). Fuente: `Matricula.WebUI/Styles/app.css`; salida (versionada): `Matricula.WebUI/wwwroot/css/app.css`. El Dockerfile la regenera en el build.
+
+```bash
+./tailwind.sh           # compila y minifica vía Docker
+./tailwind.sh --watch   # recompila al cambiar vistas/CSS
+```
+
 ## Agregar una migración
 
 ```bash

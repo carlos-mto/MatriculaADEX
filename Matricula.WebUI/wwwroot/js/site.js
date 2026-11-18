@@ -4,12 +4,12 @@
 // Write your JavaScript code.
 $(document).ready(function () {
   function alertPopup(message) {
-    $("#dialog-confirm .alert_content").html(message);
-    $("#dialog-confirm").modal("show");
+    $("#dialog-confirm .alert_content").text(message);
+    $("#dialog-confirm")[0].showModal();
   }
 
   $(".btn_close_modal").click(function () {
-    $("#dialog-confirm").modal("hide");
+    $("#dialog-confirm")[0].close();
   });
 
   $("#registro_matricula").validate({
@@ -162,12 +162,12 @@ $(document).ready(function () {
 
       var selected = $("#courseSelect option:selected");
       row = $("<tr>").append(
-        $('<td class="text-left">').append(
+        $('<td class="bg-slate-100 p-3 border-b border-white">').append(
           $('<input type="hidden" name="schedule[]">').val(scheduleCurrent),
           $('<input type="hidden" name="listCoursesTemp[]" id="listCoursesTemp[]" class="listCoursesTemp">').val(selected.val()),
           " ",
-          $('<h3 class="titleCourse">').text(selected.text()),
-          $("<small>").append(
+          $('<h3 class="titleCourse text-lg font-bold text-brand-600">').text(selected.text()),
+          $('<small class="text-slate-600">').append(
             "Capacidad: ",
             $('<span class="capacity">').text(selected.data("capacity")),
             " Aula: ",
@@ -180,7 +180,7 @@ $(document).ready(function () {
             $('<span class="endTime">').text(selected.data("endtime"))
           )
         ),
-        $('<td class="no"><i class="fa fa-trash-can"></i></td>')
+        $('<td class="no w-14 cursor-pointer bg-red-600 text-center text-xl text-white hover:bg-red-700 border-b border-white"><i class="fa fa-trash-can"></i></td>')
       );
       $("#courses").append(row);
       $("#courseSelect option:selected").remove();
