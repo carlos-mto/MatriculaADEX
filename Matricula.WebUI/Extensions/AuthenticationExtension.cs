@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Matricula.WebUI.Extensions;
 
@@ -12,25 +7,28 @@ public static class AuthenticationExtension
 {
   public static WebApplicationBuilder RegisterAuthentication(this WebApplicationBuilder builder)
   {
-    builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
-
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-      options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+      .AddCookie(o =>
       {
-        ValidIssuer = builder.Configuration.GetSection("TokenSettings").GetValue<string>("Issuer"),
-        ValidateIssuer = true,
-        ValidAudience = builder.Configuration.GetSection("TokenSettings").GetValue<string>("Audience"),
-        ValidateAudience = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("TokenSettings").GetValue<string>("Key"))),
-        ValidateIssuerSigningKey = true
-      };
-    });
+        o.LoginPath = "/Account/Login";
+        o.LogoutPath = "/Account/Logout";
+        o.Cookie.HttpOnly = true;
+        o.Cookie.SameSite = SameSiteMode.Lax;
+        o.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        o.ExpireTimeSpan = TimeSpan.FromHours(8);
+        o.SlidingExpiration = true;
+      });
 
     builder.Services.AddAuthorization();
-    builder.Services.AddHttpContextAccessor();
-    builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>(); 
+
+    var keysPath = Environment.GetEnvironmentVariable("DATAPROTECTION_KEYS_PATH");
+    if (!string.IsNullOrEmpty(keysPath))
+    {
+      builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
+        .SetApplicationName("Matricula");
+    }
+
     return builder;
   }
 }

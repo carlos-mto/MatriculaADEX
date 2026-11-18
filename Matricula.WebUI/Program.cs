@@ -1,3 +1,6 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Matricula.Infrastructure.Services;
 if (File.Exists(".env"))
 {
     DotNetEnv.Env.Load();
@@ -6,15 +9,39 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterDbContext();
 builder.RegisterAuthentication();
-builder.RegisterCors();
 builder.RegisterAppServices();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.AddPolicy("login", httpContext => RateLimitPartition.GetFixedWindowLimiter(
+        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+});
+
+var trustProxy = Environment.GetEnvironmentVariable("TRUST_PROXY") == "true";
+if (trustProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(o =>
+    {
+        o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        o.KnownIPNetworks.Clear();
+        o.KnownProxies.Clear();
+    });
+}
 
 var app = builder.Build();
+if (trustProxy)
+{
+    app.UseForwardedHeaders();
+}
 app.ExecuteMigrations();
-app.UseWebCors();
-app.UseAuthentication();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -30,6 +57,8 @@ if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseRateLimiter();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -42,6 +71,28 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MatriculaContext>();
+
+    if (!context.AdminUsers.Any())
+    {
+        var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
+        if (string.IsNullOrEmpty(adminUsername)) adminUsername = "admin";
+        var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+        if (string.IsNullOrEmpty(adminPassword))
+        {
+            app.Logger.LogWarning("No se creó el usuario administrador: defina ADMIN_PASSWORD");
+        }
+        else
+        {
+            var salt = SecurityHelper.GenerateSalt();
+            context.AdminUsers.Add(new AdminUser
+            {
+                Username = adminUsername,
+                Salt = salt,
+                PasswordHash = SecurityHelper.HashPassword(adminPassword, salt)
+            });
+            context.SaveChanges();
+        }
+    }
 
     var count = context.Students.Count();
     if (count == 0)

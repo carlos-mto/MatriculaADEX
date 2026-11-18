@@ -13,5 +13,6 @@ WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
+RUN mkdir -p /app/keys && chown app:app /app/keys
 USER app
 ENTRYPOINT ["dotnet", "Matricula.WebUI.dll"]

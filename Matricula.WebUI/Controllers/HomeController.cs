@@ -2,23 +2,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Matricula.WebUI.Models;
 using Matricula.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Options;
 
 namespace Matricula.WebUI.Controllers;
 
+[Authorize]
 public class HomeController : Controller
 {
   private readonly ILogger<HomeController> _logger;
 
   private MatriculaContext _context;
   private readonly EnrollmentService _enrollmentService;
-  public SelectList? StudentSelect { get; set; }
+  private readonly EnrollmentSettings _enrollmentSettings;
 
-  public HomeController(ILogger<HomeController> logger, MatriculaContext context, EnrollmentService enrollmentService)
+  public HomeController(ILogger<HomeController> logger, MatriculaContext context, EnrollmentService enrollmentService, IOptions<EnrollmentSettings> enrollmentSettings)
   {
     _logger = logger;
     _enrollmentService = enrollmentService;
     _context = context;
+    _enrollmentSettings = enrollmentSettings.Value;
   }
 
   public SelectList getPopulateShifts()
@@ -34,57 +38,41 @@ public class HomeController : Controller
     return (SelectList)(ViewData["Shifts"] = new SelectList(selectListItems, "Value", "Text"));
   }
 
-  public SelectList getPopulateCourses(int cycle = 0)
+  public async Task<IActionResult> Index()
   {
-    List<SelectListItem> selectListItems = _context.ClassRoomCourses.Where(_ => _.Cycle == cycle).Select(a => new SelectListItem()
-    {
-      Text = a.Course.Name,
-      Value = a.Id.ToString()
-    }).ToList();
-
-    selectListItems.Insert(0, new SelectListItem() { Text = "Seleccionar Curso", Value = "", Selected = true });
-
-    return (SelectList)(ViewData["Courses"] = new SelectList(selectListItems, "Value", "Text"));
-  }
-
-  public SelectList getPopulateStudents()
-  {
-    List<SelectListItem> selectListItems = _context.Students.Select(a => new SelectListItem()
-    {
-      Text = a.FullName,
-      Value = a.Id.ToString(),
-      Selected = false
-    }).ToList();
-
-    selectListItems.Insert(0, new SelectListItem() { Text = "Seleccionar Estudiante", Value = "" });
-
-    ViewData["Students2"] = _context.Students.Select(_ => new { _.Id, _.FullName, _.Cycle }).ToList();
-    return (SelectList)(ViewData["Students"] = new SelectList(selectListItems, "Value", "Text"));
-  }
-
-  public IActionResult Index()
-  {
-    getPopulateStudents();
-    getPopulateCourses();
+    ViewData["Students"] = await _context.Students.Select(_ => new { _.Id, _.FullName, _.Cycle }).ToListAsync();
     getPopulateShifts();
     return View();
   }
 
   [HttpPost]
-  public IActionResult GetStudent(Guid studentId)
+  public async Task<IActionResult> GetCourses(int cycle, Guid shiftId)
   {
-    var student = _context.Students.Where(a => a.Id == studentId).FirstOrDefault();
-    if (student == null)
-    {
-      return NotFound();
-    }
-    return Json(student);
-  }
+    var rows = await _context.ClassRoomCourses
+      .Where(a => a.Cycle == cycle && a.ShiftId == shiftId && a.Capacity > 0)
+      .OrderBy(_ => _.StartTime)
+      .Select(a => new
+      {
+        a.Id,
+        CourseName = a.Course!.Name,
+        ClassRoomName = a.ClassRoom!.Name,
+        ShiftName = a.Shift!.Name,
+        a.Capacity,
+        a.StartTime,
+        a.EndTime
+      })
+      .ToListAsync();
 
-  [HttpPost]
-  public IActionResult GetCourses(int cycle, Guid shiftId)
-  {
-    var courses = _context.ClassRoomCourses.Include(_ => _.ClassRoom).Include(_ => _.Shift).Include(_ => _.Course).Where(a => a.Cycle == cycle && a.ShiftId == shiftId && a.Capacity > 0).OrderBy(_ => _.StartTime).ToList();
+    var courses = rows.Select(a => new
+    {
+      id = a.Id,
+      courseName = a.CourseName,
+      classRoomName = a.ClassRoomName,
+      shiftName = a.ShiftName,
+      capacity = a.Capacity,
+      startTime = a.StartTime.ToString(@"hh\:mm"),
+      endTime = a.EndTime.ToString(@"hh\:mm")
+    });
     return Json(courses);
   }
 
@@ -108,7 +96,7 @@ public class HomeController : Controller
       courseIds.Add(id);
     }
 
-    var result = await _enrollmentService.EnrollAsync(model.studentSelect, model.shiftSelect, courseIds);
+    var result = await _enrollmentService.EnrollAsync(model.studentSelect, model.shiftSelect, courseIds, _enrollmentSettings.ActivePeriod);
     if (!result.Success)
     {
       TempData["Error"] = result.Error;
@@ -122,11 +110,13 @@ public class HomeController : Controller
   {
     return View();
   }
+  [AllowAnonymous]
   public IActionResult Privacy()
   {
     return View();
   }
 
+  [AllowAnonymous]
   [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
   public IActionResult Error()
   {

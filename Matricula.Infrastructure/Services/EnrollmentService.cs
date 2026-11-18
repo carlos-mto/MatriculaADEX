@@ -16,7 +16,7 @@ public class EnrollmentService
 
     private static EnrollmentResult Fail(string error) => new(false, error);
 
-    public async Task<EnrollmentResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> classRoomCourseIds, CancellationToken ct = default)
+    public async Task<EnrollmentResult> EnrollAsync(Guid studentId, Guid shiftId, IReadOnlyList<Guid> classRoomCourseIds, string period, CancellationToken ct = default)
     {
         if (classRoomCourseIds.Count == 0)
             return Fail("Debe agregar al menos un curso.");
@@ -31,8 +31,8 @@ public class EnrollmentService
         if (!await _ctx.Shifts.AnyAsync(s => s.Id == shiftId, ct))
             return Fail("El turno no existe.");
 
-        if (await _ctx.Enrollments.AnyAsync(e => e.StudentId == studentId, ct))
-            return Fail("El estudiante ya está matriculado.");
+        if (await _ctx.Enrollments.AnyAsync(e => e.StudentId == studentId && e.Period == period, ct))
+            return Fail($"El estudiante ya está matriculado en el periodo {period}.");
 
         var courses = await _ctx.ClassRoomCourses
             .Include(c => c.Course)
@@ -63,7 +63,7 @@ public class EnrollmentService
         await using var tx = await _ctx.Database.BeginTransactionAsync(ct);
         try
         {
-            var enrollment = new Enrollment { StudentId = studentId, ShiftId = shiftId };
+            var enrollment = new Enrollment { StudentId = studentId, ShiftId = shiftId, Period = period };
             _ctx.Enrollments.Add(enrollment);
             await _ctx.SaveChangesAsync(ct);
 
@@ -71,7 +71,8 @@ public class EnrollmentService
             {
                 var rows = await _ctx.ClassRoomCourses
                     .Where(c => c.Id == course.Id && c.Capacity > 0)
-                    .ExecuteUpdateAsync(s => s.SetProperty(c => c.Capacity, c => c.Capacity - 1), ct);
+                    .ExecuteUpdateAsync(s => s.SetProperty(c => c.Capacity, c => c.Capacity - 1)
+                        .SetProperty(c => c.UpdatedAt, DateTime.UtcNow), ct);
 
                 if (rows == 0)
                 {
@@ -93,7 +94,9 @@ public class EnrollmentService
         catch (DbUpdateException ex) when (!IsConflict(ex))
         {
             await tx.RollbackAsync(ct);
-            return Fail("El estudiante ya está matriculado.");
+            if (ex.InnerException is PostgresException { SqlState: "23505" })
+                return Fail($"El estudiante ya está matriculado en el periodo {period}.");
+            throw;
         }
         catch (Exception ex) when (IsConflict(ex))
         {

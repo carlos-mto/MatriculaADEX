@@ -16,6 +16,7 @@ namespace Matricula.Infrastructure.Data
         public DbSet<EnrollmentDetail> EnrollmentDetails { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ClassRoom> ClassRooms { get; set; }
+        public DbSet<AdminUser> AdminUsers { get; set; }
 
         public MatriculaContext(){}
 
@@ -25,21 +26,32 @@ namespace Matricula.Infrastructure.Data
         {
             if (!options.IsConfigured)
             {
-                var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-                var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
-                var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
-                var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
-                var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-             
-                var connectionString = $"Server={dbHost};port={dbPort};user id={dbUser};password={dbPassword};database={dbName};pooling=true";
-
-                options.UseNpgsql(connectionString);
+                options.UseNpgsql(ConnectionStringFactory.FromEnvironment());
             }
+        }
+
+        public override int SaveChanges()
+        {
+            TouchUpdatedAt();
+            return base.SaveChanges();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            TouchUpdatedAt();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void TouchUpdatedAt()
+        {
+            foreach (var entry in ChangeTracker.Entries<BaseEntity>().Where(e => e.State == EntityState.Modified))
+                entry.Entity.UpdatedAt = DateTime.UtcNow;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Enrollment>().HasIndex(e => e.StudentId).IsUnique();
+            modelBuilder.Entity<Enrollment>().HasIndex(e => new { e.StudentId, e.Period }).IsUnique();
+            modelBuilder.Entity<AdminUser>().HasIndex(a => a.Username).IsUnique();
             modelBuilder.Entity<EnrollmentDetail>().HasIndex(d => new { d.EnrollmentId, d.ClassRoomCourseId }).IsUnique();
         }
     }

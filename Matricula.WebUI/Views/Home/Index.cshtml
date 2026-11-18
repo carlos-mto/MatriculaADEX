@@ -5,7 +5,7 @@
     <div class="row h-100">
 
     
-    <div class="col-md-7  d-flex  hidden-xs-down hidden-sm-down hidden-md-down">
+    <div class="col-md-7  d-none d-lg-flex">
         <div class="row justify-content-center align-self-center my-auto"> 
        
         <img src="~/images/Diciembre_NuevosIngresos.jpg" class="img-fluid" style="width:70%" alt="Responsive image">
@@ -14,7 +14,7 @@
        
          
     </div>
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-5">
+    <div class="col-12 col-lg-5">
          <div class="card shadow bg-white">
         <div class="card-header">
         <h2 class="title_matricula">Matricúlate ya <br><small>y obtén beneficios especiales</small></h2>
@@ -34,14 +34,14 @@
                             <div class="row">
                                
                                 <div class="col">
-                                    <div class="form-group">
+                                    <div class="mb-3">
                                         <label for="studentSelect">Estudiante</label>
                                        
                                          
-                                         <select class="form-control form-control-lg"  id="studentSelect" name="studentSelect" data-msg="El estudiante no puede estar vacio">
+                                         <select class="form-select form-select-lg"  id="studentSelect" name="studentSelect" data-msg="El estudiante no puede estar vacio">
                                              <option value="" >Seleccionar Estudiante</option>
                                             @{
-                                                foreach (var student in ViewBag.Students2)
+                                                foreach (var student in ViewBag.Students)
                                                 {
                                                     var idString =  student.Id.ToString();
                                                     <option value="@idString" data-cycle="@student.Cycle">@student.FullName</option>
@@ -52,19 +52,19 @@
                                        
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="mb-3">
                                         <label for="shiftSelect">Turno</label>
-                                        <select class="form-control form-control-lg" asp-items="ViewBag.Shifts" id="shiftSelect"  name="shiftSelect" data-msg="El turno no puede estar vacio"></select>
+                                        <select class="form-select form-select-lg" asp-items="ViewBag.Shifts" id="shiftSelect"  name="shiftSelect" data-msg="El turno no puede estar vacio"></select>
                                         
                                     </div>
 
                                    
 
-                                    <div class="form-group">
+                                    <div class="mb-3">
                                         <label for="courseSelect">Curso</label>
 
                                         <div class="input-group">
-                                             <select class="form-control form-control-lg" asp-items="ViewBag.Courses" id="courseSelect" name="courseSelect"></select>
+                                             <select class="form-select form-select-lg" id="courseSelect" name="courseSelect"><option value="">Seleccionar Curso</option></select>
 
                                                 <a class="btn btn-secondary btn_add" href="javascript:;">+</a>
 
@@ -91,7 +91,7 @@
                                
                             </table>
 
-                            <a class="btn btn-primary btn-lg btn-block" id="register" href="javascript:;">Registrar</a>
+                            <a class="btn btn-primary btn-lg w-100" id="register" href="javascript:;">Registrar</a>
                             
                         </main>
                          </form>

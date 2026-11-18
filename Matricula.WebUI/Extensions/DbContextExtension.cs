@@ -11,15 +11,7 @@ public static class DbContextExtension
   {
     builder.Services.AddDbContextFactory<MatriculaContext>(opt =>
     {
-      var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-      var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
-      var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
-      var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
-      var dbName = Environment.GetEnvironmentVariable("DB_NAME");
-
-      var connectionString = $"Server={dbHost};port={dbPort};user id={dbUser};password={dbPassword};database={dbName};pooling=true";
-
-      opt.UseNpgsql(connectionString);
+      opt.UseNpgsql(ConnectionStringFactory.FromEnvironment());
     }, ServiceLifetime.Scoped);
 
     builder.Services.AddScoped<MatriculaContext>(

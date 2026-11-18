@@ -48,39 +48,25 @@ $(document).ready(function () {
           shiftId: shiftId,
         },
         success: function (data) {
-          var html = "";
-
           if (data.length > 0) {
-            $.each(data, function (key, value) {
-              html +=
-                "<option data-endtime='" +
-                value.endTime +
-                "' data-starttime='" +
-                value.startTime +
-                "' data-classroom='" +
-                value.classRoom.name +
-                "' data-capacity='" +
-                value.capacity +
-                "' data-shift='" +
-                value.shift.name +
-                "' value='" +
-                value.id +
-                "'>" +
-                value.course.name +
-                " (" +
-                value.startTime +
-                " - " +
-                value.endTime +
-                ")</option>";
+            var options = $.map(data, function (value) {
+              return $("<option>")
+                .val(value.id)
+                .text(value.courseName + " (" + value.startTime + " - " + value.endTime + ")")
+                .attr("data-endtime", value.endTime)
+                .attr("data-starttime", value.startTime)
+                .attr("data-classroom", value.classRoomName)
+                .attr("data-capacity", value.capacity)
+                .attr("data-shift", value.shiftName);
             });
-            $("#courseSelect").html(html);
+            $("#courseSelect").empty().append(options);
           } else {
             alertPopup("Para el ciclo y turno seleccionado no hay cursos disponibles");
           }
         },
       });
     } else {
-      $("#courseSelect").html("<option value='0'>Seleccionar Curso</option>");
+      $("#courseSelect").empty().append($("<option>").val("0").text("Seleccionar Curso"));
     }
   }
 
@@ -98,17 +84,7 @@ $(document).ready(function () {
       return;
     }
 
-    $.ajax({
-      url: "/Home/GetStudent",
-      type: "POST",
-      data: {
-        studentId: studentId,
-      },
-      success: function (data) {
-        if (!data) return;
-        loadCourse(data.cycle, $("#shiftSelect option:selected").val());
-      },
-    });
+    loadCourse($("#studentSelect option:selected").data("cycle"), $("#shiftSelect option:selected").val());
   });
 
   $("#shiftSelect").change(function () {
@@ -121,27 +97,21 @@ $(document).ready(function () {
   $(document).on("click", ".no", function () {
     var tr = $(this).closest("tr");
     var value = tr.find(".listCoursesTemp").val();
-    var title = tr.find(".titleCourse").html();
+    var title = tr.find(".titleCourse").text();
 
-    var capacity = tr.find(".capacity").html();
-    var classRoom = tr.find(".classRoom").html();
-    var startTime = tr.find(".startTime").html();
-    var endTime = tr.find(".endTime").html();
+    var capacity = tr.find(".capacity").text();
+    var classRoom = tr.find(".classRoom").text();
+    var startTime = tr.find(".startTime").text();
+    var endTime = tr.find(".endTime").text();
 
     $("#courseSelect").append(
-      "<option data-endtime='" +
-        endTime +
-        "' data-starttime='" +
-        startTime +
-        "' data-classroom='" +
-        classRoom +
-        "' data-capacity='" +
-        capacity +
-        "' value='" +
-        value +
-        "'>" +
-        title +
-        "</option>"
+      $("<option>")
+        .val(value)
+        .text(title)
+        .attr("data-endtime", endTime)
+        .attr("data-starttime", startTime)
+        .attr("data-classroom", classRoom)
+        .attr("data-capacity", capacity)
     );
 
     $(this).closest("tr").remove();
@@ -190,22 +160,27 @@ $(document).ready(function () {
         return false;
       }
 
-      row = $(
-        '<tr><td class="text-left"><input type="hidden" name="schedule[]" value="' +
-          scheduleCurrent +
-          '"><input type="hidden" name="listCoursesTemp[]" id="listCoursesTemp[]" class="listCoursesTemp" value="' +
-          $("#courseSelect option:selected").val() +
-          '"> <h3 class="titleCourse">' +
-          $("#courseSelect option:selected").text() +
-          '</h3><small>Capacidad: <span class="capacity">' +
-          $("#courseSelect option:selected").data("capacity") +
-          '</span> Aula: <span class="classRoom">' +
-          $("#courseSelect option:selected").data("classroom") +
-          '</span> <br>Horario: <span class="startTime">' +
-          $("#courseSelect option:selected").data("starttime") +
-          '</span> - <span class="endTime">' +
-          $("#courseSelect option:selected").data("endtime") +
-          '</span></small></td><td class="no"><i class="fa fa-trash-can"></i></td></tr>'
+      var selected = $("#courseSelect option:selected");
+      row = $("<tr>").append(
+        $('<td class="text-left">').append(
+          $('<input type="hidden" name="schedule[]">').val(scheduleCurrent),
+          $('<input type="hidden" name="listCoursesTemp[]" id="listCoursesTemp[]" class="listCoursesTemp">').val(selected.val()),
+          " ",
+          $('<h3 class="titleCourse">').text(selected.text()),
+          $("<small>").append(
+            "Capacidad: ",
+            $('<span class="capacity">').text(selected.data("capacity")),
+            " Aula: ",
+            $('<span class="classRoom">').text(selected.data("classroom")),
+            " ",
+            $("<br>"),
+            "Horario: ",
+            $('<span class="startTime">').text(selected.data("starttime")),
+            " - ",
+            $('<span class="endTime">').text(selected.data("endtime"))
+          )
+        ),
+        $('<td class="no"><i class="fa fa-trash-can"></i></td>')
       );
       $("#courses").append(row);
       $("#courseSelect option:selected").remove();
