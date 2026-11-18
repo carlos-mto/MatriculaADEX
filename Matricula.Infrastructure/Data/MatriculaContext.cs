@@ -57,6 +57,8 @@ namespace Matricula.Infrastructure.Data
             modelBuilder.Entity<EnrollmentDetail>().HasIndex(d => new { d.EnrollmentId, d.ClassRoomCourseId }).IsUnique();
             modelBuilder.Entity<Teacher>().HasIndex(t => t.Email).IsUnique().HasFilter("\"Email\" IS NOT NULL");
             modelBuilder.Entity<AppSetting>().HasIndex(a => a.Key).IsUnique();
+            modelBuilder.Entity<ClassRoomCourse>().HasIndex(c => new { c.Period, c.ClassRoomId });
+            modelBuilder.Entity<ClassRoomCourse>().HasIndex(c => new { c.Period, c.TeacherId });
 
             modelBuilder.Entity<Enrollment>().HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Enrollment>().HasOne(e => e.Shift).WithMany().HasForeignKey(e => e.ShiftId).OnDelete(DeleteBehavior.Restrict);

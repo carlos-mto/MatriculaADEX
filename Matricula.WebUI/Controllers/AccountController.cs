@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Matricula.Infrastructure.Services;
+using Matricula.WebUI.Extensions;
 using Matricula.WebUI.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -48,7 +49,8 @@ public class AccountController : Controller
     var claims = new List<Claim>
     {
       new(ClaimTypes.Name, user.Username),
-      new(ClaimTypes.NameIdentifier, user.Id.ToString())
+      new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+      new(AuthenticationExtension.SecurityStampClaim, user.SecurityStamp)
     };
     var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);

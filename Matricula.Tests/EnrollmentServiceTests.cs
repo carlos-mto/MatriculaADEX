@@ -77,6 +77,21 @@ public class EnrollmentServiceTests
     }
 
     [Fact]
+    public async Task CourseFromAnotherPeriod_Fails()
+    {
+        var shift = await _db.AddShiftAsync();
+        var student = await _db.AddStudentAsync();
+        var other = await _db.AddCourseAsync(shift, 1, "08:30", "09:30", period: "2027-I");
+
+        var result = await EnrollAsync(student.Id, shift.Id, [other.Id]);
+
+        Assert.False(result.Success);
+        Assert.Contains("no pertenece al periodo 2026-II", result.Error);
+        Assert.Equal(0, await CountEnrollmentsAsync(student.Id));
+        Assert.Equal(10, await CapacityAsync(other.Id));
+    }
+
+    [Fact]
     public async Task CourseFromAnotherCycle_Fails()
     {
         var shift = await _db.AddShiftAsync();
@@ -167,10 +182,11 @@ public class EnrollmentServiceTests
     {
         var shift = await _db.AddShiftAsync();
         var student = await _db.AddStudentAsync();
-        var c1 = await _db.AddCourseAsync(shift, 1, "08:30", "09:30");
+        var c1 = await _db.AddCourseAsync(shift, 1, "08:30", "09:30", period: "2026-I");
+        var c2 = await _db.AddCourseAsync(shift, 1, "08:30", "09:30", period: "2026-II");
 
         var first = await EnrollAsync(student.Id, shift.Id, [c1.Id], "2026-I");
-        var second = await EnrollAsync(student.Id, shift.Id, [c1.Id], "2026-II");
+        var second = await EnrollAsync(student.Id, shift.Id, [c2.Id], "2026-II");
 
         Assert.True(first.Success, first.Error);
         Assert.True(second.Success, second.Error);

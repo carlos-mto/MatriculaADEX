@@ -1,0 +1,10 @@
+@model IReadOnlyList<CatalogRow>
+@{
+    ViewData["Title"] = "Aulas";
+    ViewData["CountLabel"] = "Horarios";
+    ViewData["DeleteMessage"] = "¿Eliminar esta aula?";
+}
+@section Actions {
+    <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nueva aula</a>
+}
+<partial name="_CatalogIndex" model="Model" view-data="ViewData" />

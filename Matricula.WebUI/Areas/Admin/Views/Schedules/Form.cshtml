@@ -1,0 +1,75 @@
+@model ScheduleForm
+@{
+    ViewData["Title"] = Model.Id == Guid.Empty ? "Nuevo horario" : "Editar horario";
+    var locked = ViewData["Locked"] as bool? == true;
+}
+<div class="card max-w-3xl">
+    <div class="card-body">
+        <partial name="_FormErrors" model='""' />
+        @if (locked)
+        {
+            <div class="alert-error mb-4" role="status">Este horario tiene matrículas: solo se puede cambiar aula, profesor y cupos.</div>
+        }
+        <form method="post" class="grid gap-4 sm:grid-cols-2">
+            <input type="hidden" asp-for="Version" />
+            <div>
+                <label asp-for="Period" class="label"></label>
+                <input asp-for="Period" class="input" placeholder="2026-II" maxlength="20" disabled="@locked" />
+                <span asp-validation-for="Period" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="CourseId" class="label"></label>
+                <select asp-for="CourseId" disabled="@locked" class="input" asp-items='(SelectList)ViewData["Courses"]!'><option value="">Seleccionar curso</option></select>
+                <span asp-validation-for="CourseId" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ClassRoomId" class="label"></label>
+                <select asp-for="ClassRoomId" class="input" asp-items='(SelectList)ViewData["ClassRooms"]!'><option value="">Seleccionar aula</option></select>
+                <span asp-validation-for="ClassRoomId" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="ShiftId" class="label"></label>
+                <select asp-for="ShiftId" disabled="@locked" class="input" asp-items='(SelectList)ViewData["Shifts"]!'><option value="">Seleccionar turno</option></select>
+                <span asp-validation-for="ShiftId" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="TeacherId" class="label"></label>
+                <select asp-for="TeacherId" class="input" asp-items='(SelectList)ViewData["Teachers"]!'><option value="">Sin asignar</option></select>
+                <span asp-validation-for="TeacherId" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="Cycle" class="label"></label>
+                <select asp-for="Cycle" disabled="@locked" class="input" asp-items="@(new SelectList(Enumerable.Range(1, 10)))"></select>
+                <span asp-validation-for="Cycle" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="Capacity" class="label"></label>
+                <input asp-for="Capacity" type="number" min="0" class="input" />
+                <span asp-validation-for="Capacity" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="StartTime" class="label"></label>
+                <input asp-for="StartTime" disabled="@locked" type="time" class="input" />
+                <span asp-validation-for="StartTime" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="EndTime" class="label"></label>
+                <input asp-for="EndTime" disabled="@locked" type="time" class="input" />
+                <span asp-validation-for="EndTime" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            @if (locked)
+            {
+                <input type="hidden" asp-for="Period" id="Period_locked" />
+                <input type="hidden" asp-for="CourseId" id="CourseId_locked" />
+                <input type="hidden" asp-for="ShiftId" id="ShiftId_locked" />
+                <input type="hidden" asp-for="Cycle" id="Cycle_locked" />
+                <input type="hidden" asp-for="StartTime" id="StartTime_locked" />
+                <input type="hidden" asp-for="EndTime" id="EndTime_locked" />
+            }
+            <div class="flex gap-2 sm:col-span-2">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

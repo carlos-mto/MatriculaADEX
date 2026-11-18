@@ -45,4 +45,27 @@ public class EnrollmentCancelTests
         Assert.False(result.Success);
         Assert.Equal("La matrícula no existe.", result.Error);
     }
+
+    [Fact]
+    public async Task Cancel_Concurrent_OnlyOneSucceeds_CapacityRestoredOnce()
+    {
+        var shift = await _db.AddShiftAsync();
+        var student = await _db.AddStudentAsync();
+        var c1 = await _db.AddCourseAsync(shift, 1, "08:30", "09:30", 5);
+        await using (var ctx = _db.CreateContext())
+            Assert.True((await new EnrollmentService(ctx).EnrollAsync(student.Id, shift.Id, [c1.Id], "2026-II")).Success);
+        Guid enrollmentId;
+        await using (var ctx = _db.CreateContext())
+            enrollmentId = (await ctx.Enrollments.SingleAsync(e => e.StudentId == student.Id)).Id;
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => Task.Run(async () =>
+        {
+            await using var ctx = _db.CreateContext();
+            return await new EnrollmentService(ctx).CancelAsync(enrollmentId);
+        })));
+
+        Assert.Equal(1, results.Count(r => r.Success));
+        await using var check = _db.CreateContext();
+        Assert.Equal(5, await check.ClassRoomCourses.Where(c => c.Id == c1.Id).Select(c => c.Capacity).SingleAsync());
+    }
 }

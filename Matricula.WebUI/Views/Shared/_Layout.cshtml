@@ -30,10 +30,10 @@
                     <i class="fa-solid fa-bars"></i><span class="sr-only">Menú</span>
                 </button>
                 <nav id="nav-menu" class="hidden w-full flex-col gap-3 text-white md:flex md:w-auto md:flex-row md:items-center md:gap-6">
-                    <a asp-controller="Home" asp-action="Index" class="font-bold hover:text-accent">Matrícula</a>
-                    <a href="/Admin" class="font-bold hover:text-accent">Administración</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="font-bold hover:text-accent">Matrícula</a>
+                    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="font-bold hover:text-accent">Administración</a>
                     <span class="text-white/80"><i class="fa-solid fa-user mr-1"></i>@User.Identity.Name</span>
-                    <form method="post" asp-controller="Account" asp-action="Logout">
+                    <form method="post" asp-area="" asp-controller="Account" asp-action="Logout">
                         <button type="submit" class="btn btn-sm text-white ring-1 ring-white/60 hover:bg-white/10">Cerrar sesión</button>
                     </form>
                 </nav>

@@ -1,0 +1,21 @@
+@* Shared create/edit form for Courses / ClassRooms / Shifts. ViewData: Singular ("curso") *@
+@model NameForm
+@{
+    var isEdit = Model.Id != Guid.Empty;
+}
+<div class="card max-w-xl">
+    <div class="card-body">
+        <partial name="_FormErrors" model='""' />
+        <form method="post" class="space-y-4">
+            <div>
+                <label asp-for="Name" class="label"></label>
+                <input asp-for="Name" class="input" autofocus />
+                <span asp-validation-for="Name" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

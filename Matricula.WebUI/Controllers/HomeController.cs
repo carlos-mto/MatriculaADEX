@@ -47,8 +47,9 @@ public class HomeController : Controller
   [HttpPost]
   public async Task<IActionResult> GetCourses(int cycle, Guid shiftId)
   {
+    var period = await _periodService.GetActivePeriodAsync();
     var rows = await _context.ClassRoomCourses
-      .Where(a => a.Cycle == cycle && a.ShiftId == shiftId && a.Capacity > 0)
+      .Where(a => a.Period == period && a.Cycle == cycle && a.ShiftId == shiftId && a.Capacity > 0)
       .OrderBy(_ => _.StartTime)
       .Select(a => new
       {

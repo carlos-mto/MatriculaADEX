@@ -1,0 +1,4 @@
+@model DeleteButtonModel
+<form method="post" asp-action="@Model.Action" asp-route-id="@Model.Id" class="inline" onsubmit="return confirm('@Model.Message')">
+    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash-can"></i> @Model.Label</button>
+</form>

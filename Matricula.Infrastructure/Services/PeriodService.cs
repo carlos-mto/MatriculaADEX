@@ -10,6 +10,9 @@ public class PeriodService
     public const string SettingKey = "ActivePeriod";
     private static readonly Regex Format = new(@"^\d{4}-(I|II|III)$|^\d{4}-\d{1,2}$", RegexOptions.Compiled);
 
+    public static bool IsValidPeriod(string? period) =>
+        !string.IsNullOrEmpty(period) && period.Length <= 20 && Format.IsMatch(period);
+
     private readonly MatriculaContext _ctx;
     private readonly EnrollmentSettings _settings;
 
@@ -28,7 +31,7 @@ public class PeriodService
     public async Task<OperationResult> SetActivePeriodAsync(string period)
     {
         period = (period ?? "").Trim();
-        if (period.Length == 0 || period.Length > 20 || !Format.IsMatch(period))
+        if (!IsValidPeriod(period))
             return OperationResult.Fail("Formato de periodo inválido. Ej.: 2026-II");
 
         var setting = await _ctx.AppSettings.FirstOrDefaultAsync(a => a.Key == SettingKey);

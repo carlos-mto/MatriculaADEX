@@ -58,7 +58,7 @@ public class PostgresFixture : IAsyncLifetime
         return room;
     }
 
-    public async Task<ClassRoomCourse> AddCourseAsync(Shift shift, int cycle, string start, string end, int capacity = 10, ClassRoom? room = null, Teacher? teacher = null)
+    public async Task<ClassRoomCourse> AddCourseAsync(Shift shift, int cycle, string start, string end, int capacity = 10, ClassRoom? room = null, Teacher? teacher = null, string period = "2026-II")
     {
         await using var ctx = CreateContext();
         var crc = new ClassRoomCourse
@@ -69,6 +69,7 @@ public class PostgresFixture : IAsyncLifetime
             TeacherId = teacher?.Id,
             ShiftId = shift.Id,
             Cycle = cycle,
+            Period = period,
             Capacity = capacity,
             StartTime = TimeSpan.Parse(start),
             EndTime = TimeSpan.Parse(end)

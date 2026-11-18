@@ -57,6 +57,7 @@ $(document).ready(function () {
                 .attr("data-starttime", value.startTime)
                 .attr("data-classroom", value.classRoomName)
                 .attr("data-capacity", value.capacity)
+                .attr("data-teacher", value.teacherName)
                 .attr("data-shift", value.shiftName);
             });
             $("#courseSelect").empty().append(options);
@@ -103,6 +104,7 @@ $(document).ready(function () {
     var classRoom = tr.find(".classRoom").text();
     var startTime = tr.find(".startTime").text();
     var endTime = tr.find(".endTime").text();
+    var teacher = tr.find(".teacher").text();
 
     $("#courseSelect").append(
       $("<option>")
@@ -112,6 +114,7 @@ $(document).ready(function () {
         .attr("data-starttime", startTime)
         .attr("data-classroom", classRoom)
         .attr("data-capacity", capacity)
+        .attr("data-teacher", teacher)
     );
 
     $(this).closest("tr").remove();
@@ -172,6 +175,10 @@ $(document).ready(function () {
             $('<span class="capacity">').text(selected.data("capacity")),
             " Aula: ",
             $('<span class="classRoom">').text(selected.data("classroom")),
+            " ",
+            $("<br>"),
+            "Profesor: ",
+            $('<span class="teacher">').text(selected.data("teacher")),
             " ",
             $("<br>"),
             "Horario: ",

@@ -28,6 +28,7 @@ public class DashboardService
         var enrollments = await _ctx.Enrollments.CountAsync(e => e.Period == period);
 
         var schedules = await _ctx.ClassRoomCourses.AsNoTracking()
+            .Where(c => c.Period == period)
             .OrderBy(c => c.Cycle).ThenBy(c => c.StartTime)
             .Select(c => new ScheduleOccupancy(
                 c.Id,
@@ -49,7 +50,7 @@ public class DashboardService
                 t.Id,
                 t.FullName,
                 t.IsActive,
-                Slots = _ctx.ClassRoomCourses.Where(c => c.TeacherId == t.Id).Select(c => new { c.StartTime, c.EndTime }).ToList()
+                Slots = _ctx.ClassRoomCourses.Where(c => c.TeacherId == t.Id && c.Period == period).Select(c => new { c.StartTime, c.EndTime }).ToList()
             })
             .ToListAsync();
 

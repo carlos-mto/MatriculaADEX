@@ -17,15 +17,16 @@ public class DashboardServiceTests
         var teacher = await _db.AddTeacherAsync();
         var s1 = await _db.AddStudentAsync();
         var s2 = await _db.AddStudentAsync();
-        var c1 = await _db.AddCourseAsync(shift, 1, "08:00", "09:30", teacher: teacher);
-        var c2 = await _db.AddCourseAsync(shift, 1, "10:00", "11:00", teacher: teacher);
+        var c1 = await _db.AddCourseAsync(shift, 1, "08:00", "09:30", teacher: teacher, period: period);
+        var c2 = await _db.AddCourseAsync(shift, 1, "10:00", "11:00", teacher: teacher, period: period);
+        var other = await _db.AddCourseAsync(shift, 1, "12:00", "13:00", teacher: teacher, period: "2098-I");
 
         await using (var ctx = _db.CreateContext())
             Assert.True((await new EnrollmentService(ctx).EnrollAsync(s1.Id, shift.Id, [c1.Id, c2.Id], period)).Success);
         await using (var ctx = _db.CreateContext())
             Assert.True((await new EnrollmentService(ctx).EnrollAsync(s2.Id, shift.Id, [c1.Id], period)).Success);
         await using (var ctx = _db.CreateContext())
-            Assert.True((await new EnrollmentService(ctx).EnrollAsync(s2.Id, shift.Id, [c2.Id], "2098-I")).Success);
+            Assert.True((await new EnrollmentService(ctx).EnrollAsync(s2.Id, shift.Id, [other.Id], "2098-I")).Success);
 
         await using var dctx = _db.CreateContext();
         var stats = await new DashboardService(dctx).GetAsync(period);
@@ -33,6 +34,7 @@ public class DashboardServiceTests
         Assert.Equal(2, stats.Enrollments);
         Assert.Equal(2, stats.Schedules.Single(s => s.ClassRoomCourseId == c1.Id).Enrolled);
         Assert.Equal(1, stats.Schedules.Single(s => s.ClassRoomCourseId == c2.Id).Enrolled);
+        Assert.DoesNotContain(stats.Schedules, s => s.ClassRoomCourseId == other.Id);
         var load = stats.TeacherLoads.Single(t => t.TeacherId == teacher.Id);
         Assert.Equal(2, load.ScheduleCount);
         Assert.Equal(2.5, load.WeeklyHours);

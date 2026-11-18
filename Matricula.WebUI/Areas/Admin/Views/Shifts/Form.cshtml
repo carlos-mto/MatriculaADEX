@@ -1,0 +1,5 @@
+@model NameForm
+@{
+    ViewData["Title"] = Model.Id == Guid.Empty ? "Nuevo turno" : "Editar turno";
+}
+<partial name="_CatalogForm" model="Model" />

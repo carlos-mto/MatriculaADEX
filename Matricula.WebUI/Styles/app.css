@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source "../Views/**/*.cshtml";
+@source "../Areas/**/*.cshtml";
 @source "../wwwroot/js/**/*.js";
 
 @theme {

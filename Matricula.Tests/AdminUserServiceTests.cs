@@ -44,6 +44,22 @@ public class AdminUserServiceTests
     }
 
     [Fact]
+    public async Task Success_ChangesSecurityStamp()
+    {
+        var id = await AddAdminAsync();
+        string before;
+        await using (var ctx = _db.CreateContext())
+            before = await new AdminUserService(ctx).GetSecurityStampAsync(id) ?? "";
+
+        Assert.True((await ChangeAsync(id, "Vieja1234", "Nueva12345")).Success);
+
+        await using var ctx2 = _db.CreateContext();
+        var after = await new AdminUserService(ctx2).GetSecurityStampAsync(id);
+        Assert.False(string.IsNullOrEmpty(before));
+        Assert.NotEqual(before, after);
+    }
+
+    [Fact]
     public async Task Success_NewPasswordVerifies()
     {
         var id = await AddAdminAsync();

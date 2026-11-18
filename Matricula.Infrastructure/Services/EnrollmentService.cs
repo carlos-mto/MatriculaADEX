@@ -43,6 +43,8 @@ public class EnrollmentService
 
         foreach (var c in courses)
         {
+            if (c.Period != period)
+                return Fail($"El curso {c.Course?.Name} no pertenece al periodo {period}.");
             if (c.Cycle != student.Cycle || c.ShiftId != shiftId)
                 return Fail($"El curso {c.Course?.Name} no corresponde al ciclo/turno del estudiante.");
         }
@@ -129,6 +131,11 @@ public class EnrollmentService
             await _ctx.SaveChangesAsync(ct);
             await tx.CommitAsync(ct);
             return OperationResult.Ok();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await tx.RollbackAsync(ct);
+            return Fail("La matrícula ya fue anulada.");
         }
         catch (Exception ex) when (IsConflict(ex))
         {

@@ -11,6 +11,9 @@ public class AdminUserService
         _ctx = ctx;
     }
 
+    public async Task<string?> GetSecurityStampAsync(Guid adminId) =>
+        await _ctx.AdminUsers.AsNoTracking().Where(u => u.Id == adminId).Select(u => u.SecurityStamp).FirstOrDefaultAsync();
+
     public async Task<OperationResult> ChangePasswordAsync(Guid adminId, string current, string newPassword)
     {
         var user = await _ctx.AdminUsers.FirstOrDefaultAsync(u => u.Id == adminId);
@@ -24,6 +27,7 @@ public class AdminUserService
 
         user.Salt = SecurityHelper.GenerateSalt();
         user.PasswordHash = SecurityHelper.HashPassword(newPassword, user.Salt);
+        user.SecurityStamp = Guid.NewGuid().ToString("N");
         await _ctx.SaveChangesAsync();
         return OperationResult.Ok();
     }

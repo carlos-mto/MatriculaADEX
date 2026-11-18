@@ -21,7 +21,14 @@ public class ClassRoomCourse : BaseEntity
     public Teacher? Teacher { get; set; }
     public int Cycle { get; set; }
 
+    [Required, MaxLength(20)]
+    public string Period { get; set; } = "";
+
     public int Capacity { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
+
+    // Npgsql maps a [Timestamp] uint to the xmin system column (optimistic concurrency token).
+    [Timestamp]
+    public uint Version { get; set; }
 }

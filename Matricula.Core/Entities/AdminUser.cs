@@ -10,4 +10,7 @@ public class AdminUser : BaseEntity
 
     [Required]
     public string Salt { get; set; } = "";
+
+    [Required, MaxLength(64)]
+    public string SecurityStamp { get; set; } = Guid.NewGuid().ToString("N");
 }

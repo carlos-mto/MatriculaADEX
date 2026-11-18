@@ -39,6 +39,11 @@ namespace Matricula.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("SecurityStamp")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -130,6 +135,11 @@ namespace Matricula.Infrastructure.Migrations
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("interval");
 
+                    b.Property<string>("Period")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<Guid>("ShiftId")
                         .HasColumnType("uuid");
 
@@ -142,6 +152,12 @@ namespace Matricula.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClassRoomId");
@@ -151,6 +167,10 @@ namespace Matricula.Infrastructure.Migrations
                     b.HasIndex("ShiftId");
 
                     b.HasIndex("TeacherId");
+
+                    b.HasIndex("Period", "ClassRoomId");
+
+                    b.HasIndex("Period", "TeacherId");
 
                     b.ToTable("ClassRoomCourses");
                 });
