@@ -17,7 +17,7 @@ namespace Matricula.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -125,7 +125,8 @@ namespace Matricula.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("StudentId")
+                        .IsUnique();
 
                     b.ToTable("Enrollments");
                 });
@@ -152,7 +153,8 @@ namespace Matricula.Infrastructure.Migrations
 
                     b.HasIndex("ClassRoomCourseId");
 
-                    b.HasIndex("EnrollmentId");
+                    b.HasIndex("EnrollmentId", "ClassRoomCourseId")
+                        .IsUnique();
 
                     b.ToTable("EnrollmentDetails");
                 });

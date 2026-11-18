@@ -25,6 +25,10 @@
               
                 <div class="matricula overflow-auto">
                     <div style="min-width: 400px">
+                        @if (TempData["Error"] is string err)
+                        {
+                            <div class="alert alert-danger">@err</div>
+                        }
                         <form method="post" id="registro_matricula">
                         <header>
                             <div class="row">

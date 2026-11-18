@@ -1,30 +1,17 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
-WORKDIR /app
-COPY ./ ./
-#COPY ./.env ./Matricula.WebUI/.env
-RUN dotnet tool install --global dotnet-ef
-#ENV PATH="${PATH}:/root/.dotnet/tools"
-#RUN dotnet ef database update --project Matricula.Infrastructure --startup-project Matricula.WebUI
-RUN dotnet publish --configuration Release
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY Matricula.sln ./
+COPY Matricula.Core/Matricula.Core.csproj Matricula.Core/
+COPY Matricula.Infrastructure/Matricula.Infrastructure.csproj Matricula.Infrastructure/
+COPY Matricula.WebUI/Matricula.WebUI.csproj Matricula.WebUI/
+RUN dotnet restore Matricula.WebUI/Matricula.WebUI.csproj
+COPY . .
+RUN dotnet publish Matricula.WebUI/Matricula.WebUI.csproj -c Release -o /app/publish --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
-RUN apt update
-RUN apt install -y curl
-COPY ./.env ./.env
-ENV ASPNETCORE_ENVIRONMENT=Production
-ENV DOTNET_PRINT_TELEMETRY_MESSAGE=false
-COPY --from=build-env /app/Matricula.WebUI/bin/Release/net6.0 .
-EXPOSE 80 
+COPY --from=build /app/publish .
+ENV ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+USER app
 ENTRYPOINT ["dotnet", "Matricula.WebUI.dll"]
-
-#COPY Matricula/Matricula.WebUI/bin/Release/net6.0/ App/
-#WORKDIR /App
-#
-#ENV DOTNET_EnableDiagnostics=0
-#
-#RUN dotnet tool install --global dotnet-ef
-#
-#RUN dotnet publish --configuration Release
-#
-#ENTRYPOINT ["dotnet", "Matricula.WebUI.dll"]

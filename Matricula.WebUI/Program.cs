@@ -1,4 +1,7 @@
-DotNetEnv.Env.Load();
+if (File.Exists(".env"))
+{
+    DotNetEnv.Env.Load();
+}
 var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterDbContext();
@@ -20,7 +23,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -33,9 +39,9 @@ app.MapControllerRoute(
 
 
 
-using (var context = new MatriculaContext())
+using (var scope = app.Services.CreateScope())
 {
-    context.Database.EnsureCreated();
+    var context = scope.ServiceProvider.GetRequiredService<MatriculaContext>();
 
     var count = context.Students.Count();
     if (count == 0)

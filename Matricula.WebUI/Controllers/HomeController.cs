@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Matricula.WebUI.Models;
+using Matricula.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Matricula.WebUI.Controllers;
@@ -10,11 +11,13 @@ public class HomeController : Controller
   private readonly ILogger<HomeController> _logger;
 
   private MatriculaContext _context;
+  private readonly EnrollmentService _enrollmentService;
   public SelectList? StudentSelect { get; set; }
 
-  public HomeController(ILogger<HomeController> logger, MatriculaContext context)
+  public HomeController(ILogger<HomeController> logger, MatriculaContext context, EnrollmentService enrollmentService)
   {
     _logger = logger;
+    _enrollmentService = enrollmentService;
     _context = context;
   }
 
@@ -71,6 +74,10 @@ public class HomeController : Controller
   public IActionResult GetStudent(Guid studentId)
   {
     var student = _context.Students.Where(a => a.Id == studentId).FirstOrDefault();
+    if (student == null)
+    {
+      return NotFound();
+    }
     return Json(student);
   }
 
@@ -83,49 +90,32 @@ public class HomeController : Controller
 
 
   [HttpPost, ValidateAntiForgeryToken]
-  public IActionResult Index(EnrollmentModel model)
+  public async Task<IActionResult> Index(EnrollmentModel model)
   {
-    if (ModelState.IsValid)
-    {
-      var student = _context.Students.Where(a => a.Id == model.studentSelect).FirstOrDefault();
-      var shift = _context.Shifts.Where(a => a.Id == model.shiftSelect).FirstOrDefault();
-
-      Guid[] courseIds = model.listCourses.Split(',').Select(a => Guid.Parse(a)).ToArray();
-
-      var enrollment = new Enrollment
-      {
-        StudentId = student.Id
-      };
-
-      _context.Enrollments.Add(enrollment);
-
-      _context.SaveChanges();
-
-
-      foreach (var course in courseIds)
-      {
-        var classRoomCourse = _context.ClassRoomCourses.Where(a => a.Id == course).FirstOrDefault();
-
-        classRoomCourse.Capacity = classRoomCourse.Capacity - 1;
-        _context.ClassRoomCourses.Update(classRoomCourse);
-
-        var enrollmentDetail = new EnrollmentDetail
-        {
-          EnrollmentId = enrollment.Id,
-          ClassRoomCourseId = classRoomCourse.Id
-        };
-
-        _context.EnrollmentDetails.Add(enrollmentDetail);
-      }
-
-      _context.SaveChanges();
-      return RedirectToAction("Gracias");
-    }
-    else
+    if (!ModelState.IsValid)
     {
       return RedirectToAction("Index");
     }
 
+    var courseIds = new List<Guid>();
+    foreach (var part in (model.listCourses ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+    {
+      if (!Guid.TryParse(part, out var id))
+      {
+        TempData["Error"] = "Lista de cursos inválida.";
+        return RedirectToAction("Index");
+      }
+      courseIds.Add(id);
+    }
+
+    var result = await _enrollmentService.EnrollAsync(model.studentSelect, model.shiftSelect, courseIds);
+    if (!result.Success)
+    {
+      TempData["Error"] = result.Error;
+      return RedirectToAction("Index");
+    }
+
+    return RedirectToAction("Gracias");
   }
 
   public IActionResult Gracias()

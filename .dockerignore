@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+.git
+.vscode
+**/.env*
+capture.png
+*.md

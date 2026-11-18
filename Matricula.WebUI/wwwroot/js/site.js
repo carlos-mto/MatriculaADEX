@@ -84,8 +84,19 @@ $(document).ready(function () {
     }
   }
 
+  function clearSelectedCourses() {
+    $("#courses tr").remove();
+    updateListCourses();
+  }
+
   $("#studentSelect").change(function () {
     var studentId = $(this).val();
+
+    clearSelectedCourses();
+    if (!studentId) {
+      loadCourse(0, "");
+      return;
+    }
 
     $.ajax({
       url: "/Home/GetStudent",
@@ -94,6 +105,7 @@ $(document).ready(function () {
         studentId: studentId,
       },
       success: function (data) {
+        if (!data) return;
         loadCourse(data.cycle, $("#shiftSelect option:selected").val());
       },
     });
@@ -102,6 +114,7 @@ $(document).ready(function () {
   $("#shiftSelect").change(function () {
     var shiftId = $(this).val();
 
+    clearSelectedCourses();
     loadCourse($("#studentSelect option:selected").data("cycle"), shiftId);
   });
 

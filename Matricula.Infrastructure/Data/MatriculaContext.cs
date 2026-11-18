@@ -23,20 +23,24 @@ namespace Matricula.Infrastructure.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-            var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
-            var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
-            var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
-            var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+            if (!options.IsConfigured)
+            {
+                var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+                var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+                var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
+                var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
+                var dbName = Environment.GetEnvironmentVariable("DB_NAME");
              
-            var connectionString = $"Server={dbHost};port={dbPort};user id={dbUser};password={dbPassword};database={dbName};pooling=true";
+                var connectionString = $"Server={dbHost};port={dbPort};user id={dbUser};password={dbPassword};database={dbName};pooling=true";
 
-            options.UseNpgsql(connectionString);
+                options.UseNpgsql(connectionString);
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-          
+            modelBuilder.Entity<Enrollment>().HasIndex(e => e.StudentId).IsUnique();
+            modelBuilder.Entity<EnrollmentDetail>().HasIndex(d => new { d.EnrollmentId, d.ClassRoomCourseId }).IsUnique();
         }
     }
 }
