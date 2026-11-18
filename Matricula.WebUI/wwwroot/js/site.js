@@ -4,12 +4,12 @@
 // Write your JavaScript code.
 $(document).ready(function () {
   function alertPopup(message) {
-    $("#dialog-confirm .alert_content").html(message);
-    $("#dialog-confirm").modal("show");
+    $("#dialog-confirm .alert_content").text(message);
+    $("#dialog-confirm")[0].showModal();
   }
 
   $(".btn_close_modal").click(function () {
-    $("#dialog-confirm").modal("hide");
+    $("#dialog-confirm")[0].close();
   });
 
   $("#registro_matricula").validate({
@@ -48,87 +48,73 @@ $(document).ready(function () {
           shiftId: shiftId,
         },
         success: function (data) {
-          var html = "";
-
           if (data.length > 0) {
-            $.each(data, function (key, value) {
-              html +=
-                "<option data-endtime='" +
-                value.endTime +
-                "' data-starttime='" +
-                value.startTime +
-                "' data-classroom='" +
-                value.classRoom.name +
-                "' data-capacity='" +
-                value.capacity +
-                "' data-shift='" +
-                value.shift.name +
-                "' value='" +
-                value.id +
-                "'>" +
-                value.course.name +
-                " (" +
-                value.startTime +
-                " - " +
-                value.endTime +
-                ")</option>";
+            var options = $.map(data, function (value) {
+              return $("<option>")
+                .val(value.id)
+                .text(value.courseName + " (" + value.startTime + " - " + value.endTime + ")")
+                .attr("data-endtime", value.endTime)
+                .attr("data-starttime", value.startTime)
+                .attr("data-classroom", value.classRoomName)
+                .attr("data-capacity", value.capacity)
+                .attr("data-teacher", value.teacherName)
+                .attr("data-shift", value.shiftName);
             });
-            $("#courseSelect").html(html);
+            $("#courseSelect").empty().append(options);
           } else {
             alertPopup("Para el ciclo y turno seleccionado no hay cursos disponibles");
           }
         },
       });
     } else {
-      $("#courseSelect").html("<option value='0'>Seleccionar Curso</option>");
+      $("#courseSelect").empty().append($("<option>").val("0").text("Seleccionar Curso"));
     }
+  }
+
+  function clearSelectedCourses() {
+    $("#courses tr").remove();
+    updateListCourses();
   }
 
   $("#studentSelect").change(function () {
     var studentId = $(this).val();
 
-    $.ajax({
-      url: "/Home/GetStudent",
-      type: "POST",
-      data: {
-        studentId: studentId,
-      },
-      success: function (data) {
-        loadCourse(data.cycle, $("#shiftSelect option:selected").val());
-      },
-    });
+    clearSelectedCourses();
+    if (!studentId) {
+      loadCourse(0, "");
+      return;
+    }
+
+    loadCourse($("#studentSelect option:selected").data("cycle"), $("#shiftSelect option:selected").val());
   });
 
   $("#shiftSelect").change(function () {
     var shiftId = $(this).val();
 
+    clearSelectedCourses();
     loadCourse($("#studentSelect option:selected").data("cycle"), shiftId);
   });
 
   $(document).on("click", ".no", function () {
     var tr = $(this).closest("tr");
     var value = tr.find(".listCoursesTemp").val();
-    var title = tr.find(".titleCourse").html();
+    var title = tr.find(".titleCourse").text();
 
-    var capacity = tr.find(".capacity").html();
-    var classRoom = tr.find(".classRoom").html();
-    var startTime = tr.find(".startTime").html();
-    var endTime = tr.find(".endTime").html();
+    var capacity = tr.find(".capacity").text();
+    var classRoom = tr.find(".classRoom").text();
+    var startTime = tr.find(".startTime").text();
+    var endTime = tr.find(".endTime").text();
+    var teacher = tr.find(".teacher").text();
 
     $("#courseSelect").append(
-      "<option data-endtime='" +
-        endTime +
-        "' data-starttime='" +
-        startTime +
-        "' data-classroom='" +
-        classRoom +
-        "' data-capacity='" +
-        capacity +
-        "' value='" +
-        value +
-        "'>" +
-        title +
-        "</option>"
+      $("<option>")
+        .val(value)
+        .text(title)
+        .attr("data-endtime", endTime)
+        .attr("data-starttime", startTime)
+        .attr("data-classroom", classRoom)
+        .attr("data-capacity", capacity)
+        .attr("data-teacher", teacher)
     );
 
     $(this).closest("tr").remove();
@@ -151,40 +137,57 @@ $(document).ready(function () {
     $(".error_course").hide();
     $("#courseSelect").removeClass("error");
     if ($("#courseSelect option:selected").val()) {
-      var scheduleInStorage = $("input[name='schedule[]']")
-        .map(function () {
-          return $(this).val();
-        })
-        .toArray();
-
       var scheduleCurrent =
         $("#courseSelect option:selected").data("starttime") +
         "-" +
         $("#courseSelect option:selected").data("endtime");
 
-      console.log(jQuery.inArray(scheduleCurrent, scheduleInStorage));
+      var toMinutes = function (t) {
+        var p = String(t).split(":");
+        return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+      };
+      var newStart = toMinutes($("#courseSelect option:selected").data("starttime"));
+      var newEnd = toMinutes($("#courseSelect option:selected").data("endtime"));
+      var conflict = false;
+      $("#courses tr").each(function () {
+        var exStart = toMinutes($(this).find(".startTime").text());
+        var exEnd = toMinutes($(this).find(".endTime").text());
+        if (newStart < exEnd && exStart < newEnd) {
+          conflict = true;
+          return false;
+        }
+      });
 
-      if (jQuery.inArray(scheduleCurrent, scheduleInStorage) == 0) {
+      if (conflict) {
         alertPopup("El curso que trata de añadir coincide en el horario con otro curso añadido");
         return false;
       }
 
-      row = $(
-        '<tr><td class="text-left"><input type="hidden" name="schedule[]" value="' +
-          scheduleCurrent +
-          '"><input type="hidden" name="listCoursesTemp[]" id="listCoursesTemp[]" class="listCoursesTemp" value="' +
-          $("#courseSelect option:selected").val() +
-          '"> <h3 class="titleCourse">' +
-          $("#courseSelect option:selected").text() +
-          '</h3><small>Capacidad: <span class="capacity">' +
-          $("#courseSelect option:selected").data("capacity") +
-          '</span> Aula: <span class="classRoom">' +
-          $("#courseSelect option:selected").data("classroom") +
-          '</span> <br>Horario: <span class="startTime">' +
-          $("#courseSelect option:selected").data("starttime") +
-          '</span> - <span class="endTime">' +
-          $("#courseSelect option:selected").data("endtime") +
-          '</span></small></td><td class="no"><i class="fa fa-trash-can"></i></td></tr>'
+      var selected = $("#courseSelect option:selected");
+      row = $("<tr>").append(
+        $('<td class="bg-slate-100 p-3 border-b border-white">').append(
+          $('<input type="hidden" name="schedule[]">').val(scheduleCurrent),
+          $('<input type="hidden" name="listCoursesTemp[]" id="listCoursesTemp[]" class="listCoursesTemp">').val(selected.val()),
+          " ",
+          $('<h3 class="titleCourse text-lg font-bold text-brand-600">').text(selected.text()),
+          $('<small class="text-slate-600">').append(
+            "Capacidad: ",
+            $('<span class="capacity">').text(selected.data("capacity")),
+            " Aula: ",
+            $('<span class="classRoom">').text(selected.data("classroom")),
+            " ",
+            $("<br>"),
+            "Profesor: ",
+            $('<span class="teacher">').text(selected.data("teacher")),
+            " ",
+            $("<br>"),
+            "Horario: ",
+            $('<span class="startTime">').text(selected.data("starttime")),
+            " - ",
+            $('<span class="endTime">').text(selected.data("endtime"))
+          )
+        ),
+        $('<td class="no w-14 cursor-pointer bg-red-600 text-center text-xl text-white hover:bg-red-700 border-b border-white"><i class="fa fa-trash-can"></i></td>')
       );
       $("#courses").append(row);
       $("#courseSelect option:selected").remove();

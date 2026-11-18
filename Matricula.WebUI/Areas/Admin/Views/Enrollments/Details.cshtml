@@ -1,0 +1,41 @@
+@model EnrollmentDetailsViewModel
+@{
+    ViewData["Title"] = "Detalle de matrícula";
+    var e = Model.Enrollment;
+}
+@section Actions {
+    <a asp-action="Index" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+    <partial name="_DeleteButton" model='new DeleteButtonModel(e.Id, "¿Anular esta matrícula? Se devolverán los cupos.", "Cancel", "Anular")' />
+}
+<div class="card mb-6">
+    <div class="card-body grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div><div class="label">Alumno</div>@e.Student.FullName</div>
+        <div><div class="label">Ciclo</div>@e.Student.Cycle</div>
+        <div><div class="label">Periodo</div>@e.Period</div>
+        <div><div class="label">Turno</div>@(e.Shift?.Name ?? "-")</div>
+        <div><div class="label">Fecha</div>@LimaTime.Format(e.CreatedAt)</div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-header"><h2 class="text-lg font-bold text-brand-700">Cursos matriculados</h2></div>
+    <div class="overflow-x-auto">
+        <table class="table">
+            <thead><tr><th>Curso</th><th>Aula</th><th>Profesor</th><th>Horario</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Courses)
+                {
+                    <tr>
+                        <td class="font-bold">@c.Course?.Name</td>
+                        <td>@c.ClassRoom?.Name</td>
+                        <td>@(c.Teacher?.FullName ?? "Por asignar")</td>
+                        <td class="whitespace-nowrap">@c.StartTime.ToString(@"hh\:mm")–@c.EndTime.ToString(@"hh\:mm")</td>
+                    </tr>
+                }
+                @if (Model.Courses.Count == 0)
+                {
+                    <tr><td colspan="4" class="py-8 text-center text-slate-500">No hay registros</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

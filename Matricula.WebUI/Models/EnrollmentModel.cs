@@ -9,5 +9,5 @@ public class EnrollmentModel
 {
     public Guid studentSelect{ get; set; }
     public Guid shiftSelect{ get; set; }
-    public string listCourses{ get; set; }
+    public string? listCourses{ get; set; }
 }

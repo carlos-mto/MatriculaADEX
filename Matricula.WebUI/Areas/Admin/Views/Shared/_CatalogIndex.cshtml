@@ -1,0 +1,32 @@
+@* Shared list for Courses / ClassRooms / Shifts. ViewData: Singular ("curso"), CountLabel ("Horarios"), EmptyLabel, DeleteMessage *@
+@model IReadOnlyList<CatalogRow>
+<div class="card">
+    <div class="overflow-x-auto">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>@ViewData["CountLabel"]</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td class="font-bold">@r.Name</td>
+                        <td>@r.Count</td>
+                        <td class="whitespace-nowrap text-right">
+                            <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>
+                            <partial name="_DeleteButton" model='new DeleteButtonModel(r.Id, (string)ViewData["DeleteMessage"]!)' />
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="3" class="py-8 text-center text-slate-500">No hay registros</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

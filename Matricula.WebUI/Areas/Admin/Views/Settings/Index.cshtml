@@ -1,0 +1,46 @@
+@model SettingsViewModel
+@{
+    ViewData["Title"] = "Configuración";
+}
+<div class="grid gap-6 lg:grid-cols-2">
+    <div class="card">
+        <div class="card-header"><h2 class="text-lg font-bold text-brand-700">Periodo activo</h2></div>
+        <div class="card-body">
+            <p class="mb-4 text-sm text-slate-600">Periodo actual: <span class="badge">@Model.ActivePeriod</span></p>
+            <partial name="_FormErrors" model='"PeriodForm"' />
+            <form method="post" asp-action="SavePeriod" class="space-y-4">
+                <div>
+                    <label asp-for="PeriodForm.Period" class="label"></label>
+                    <input asp-for="PeriodForm.Period" class="input" placeholder="Ej.: 2026-II" />
+                    <span asp-validation-for="PeriodForm.Period" class="mt-1 block text-sm font-bold text-red-600"></span>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2 class="text-lg font-bold text-brand-700">Cambiar contraseña</h2></div>
+        <div class="card-body">
+            <partial name="_FormErrors" model='"PasswordForm"' />
+            <form method="post" asp-action="ChangePassword" class="space-y-4" autocomplete="off">
+                <div>
+                    <label asp-for="PasswordForm.CurrentPassword" class="label"></label>
+                    <input asp-for="PasswordForm.CurrentPassword" type="password" class="input" autocomplete="current-password" />
+                    <span asp-validation-for="PasswordForm.CurrentPassword" class="mt-1 block text-sm font-bold text-red-600"></span>
+                </div>
+                <div>
+                    <label asp-for="PasswordForm.NewPassword" class="label"></label>
+                    <input asp-for="PasswordForm.NewPassword" type="password" class="input" autocomplete="new-password" />
+                    <span asp-validation-for="PasswordForm.NewPassword" class="mt-1 block text-sm font-bold text-red-600"></span>
+                </div>
+                <div>
+                    <label asp-for="PasswordForm.ConfirmPassword" class="label"></label>
+                    <input asp-for="PasswordForm.ConfirmPassword" type="password" class="input" autocomplete="new-password" />
+                    <span asp-validation-for="PasswordForm.ConfirmPassword" class="mt-1 block text-sm font-bold text-red-600"></span>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-key"></i> Cambiar contraseña</button>
+            </form>
+        </div>
+    </div>
+</div>

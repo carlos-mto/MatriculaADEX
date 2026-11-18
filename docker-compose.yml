@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-matricula}
+      POSTGRES_USER: ${DATABASE_USER:-matricula}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-matricula}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-matricula} -d ${DB_NAME:-matricula}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    build: .
+    environment:
+      DB_HOST: db
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-matricula}
+      DATABASE_USER: ${DATABASE_USER:-matricula}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-matricula}
+      Enrollment__ActivePeriod: ${ENROLLMENT_PERIOD:-2026-II}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD en .env}
+      DATAPROTECTION_KEYS_PATH: /app/keys
+    volumes:
+      - dp_keys:/app/keys
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  dp_keys:

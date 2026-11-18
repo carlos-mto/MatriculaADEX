@@ -1,0 +1,26 @@
+@model LoginModel
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="mx-auto max-w-md">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-2xl font-bold text-brand-600">Iniciar sesión</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="space-y-4">
+                <div asp-validation-summary="All" class="text-sm font-bold text-red-600"></div>
+                <div>
+                    <label asp-for="Username" class="label">Usuario</label>
+                    <input asp-for="Username" class="input" autocomplete="username" autofocus />
+                </div>
+                <div>
+                    <label asp-for="Password" class="label">Contraseña</label>
+                    <input asp-for="Password" type="password" class="input" autocomplete="current-password" />
+                </div>
+                <button type="submit" class="btn btn-primary w-full">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</div>

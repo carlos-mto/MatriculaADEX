@@ -1,0 +1,26 @@
+@model Pager
+@{
+    string Link(int p)
+    {
+        var q = Context.Request.Query.Where(k => k.Key != "page")
+            .ToDictionary(k => k.Key, k => (string?)k.Value.ToString());
+        q["page"] = p.ToString();
+        return Context.Request.Path + QueryString.Create(q).ToUriComponent();
+    }
+}
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4 flex items-center justify-between gap-3 text-sm" aria-label="Paginación">
+        <span class="text-slate-600">Página @Model.Page de @Model.TotalPages (@Model.Total registros)</span>
+        <div class="flex gap-2">
+            @if (Model.Page > 1)
+            {
+                <a href="@Link(Model.Page - 1)" class="btn btn-secondary btn-sm"><i class="fa-solid fa-chevron-left"></i> Anterior</a>
+            }
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="@Link(Model.Page + 1)" class="btn btn-secondary btn-sm">Siguiente <i class="fa-solid fa-chevron-right"></i></a>
+            }
+        </div>
+    </nav>
+}

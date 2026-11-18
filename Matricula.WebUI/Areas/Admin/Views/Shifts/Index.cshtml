@@ -1,0 +1,10 @@
+@model IReadOnlyList<CatalogRow>
+@{
+    ViewData["Title"] = "Turnos";
+    ViewData["CountLabel"] = "Horarios";
+    ViewData["DeleteMessage"] = "¿Eliminar este turno?";
+}
+@section Actions {
+    <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nuevo turno</a>
+}
+<partial name="_CatalogIndex" model="Model" view-data="ViewData" />

@@ -1,0 +1,14 @@
+@* Model: ModelState key holding form-level errors ("" by default). *@
+@model string
+@{
+    var errors = ViewContext.ViewData.ModelState.TryGetValue(Model ?? "", out var entry) ? entry.Errors : null;
+}
+@if (errors is { Count: > 0 })
+{
+    <div class="alert-error mb-4" role="alert">
+        @foreach (var e in errors)
+        {
+            <div>@e.ErrorMessage</div>
+        }
+    </div>
+}

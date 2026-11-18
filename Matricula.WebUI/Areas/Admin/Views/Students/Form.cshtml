@@ -1,0 +1,25 @@
+@model StudentForm
+@{
+    ViewData["Title"] = Model.Id == Guid.Empty ? "Nuevo alumno" : "Editar alumno";
+}
+<div class="card max-w-xl">
+    <div class="card-body">
+        <partial name="_FormErrors" model='""' />
+        <form method="post" class="space-y-4">
+            <div>
+                <label asp-for="FullName" class="label"></label>
+                <input asp-for="FullName" class="input" autofocus />
+                <span asp-validation-for="FullName" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div>
+                <label asp-for="Cycle" class="label"></label>
+                <select asp-for="Cycle" class="input" asp-items="@(new SelectList(Enumerable.Range(1, 10)))"></select>
+                <span asp-validation-for="Cycle" class="mt-1 block text-sm font-bold text-red-600"></span>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

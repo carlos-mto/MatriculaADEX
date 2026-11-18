@@ -1,0 +1,81 @@
+@model IReadOnlyList<ClassRoomCourse>
+@{
+    ViewData["Title"] = "Horarios";
+}
+@section Actions {
+    <a asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nuevo horario</a>
+}
+<form method="get" class="card mb-4">
+    <div class="card-body grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div>
+            <label for="period" class="label">Periodo</label>
+            <select id="period" name="period" class="input" asp-items='(SelectList)ViewData["Periods"]!'></select>
+        </div>
+        <div>
+            <label for="cycle" class="label">Ciclo</label>
+            <select id="cycle" name="cycle" class="input" asp-items='(SelectList)ViewData["Cycles"]!'><option value="">Todos</option></select>
+        </div>
+        <div>
+            <label for="shiftId" class="label">Turno</label>
+            <select id="shiftId" name="shiftId" class="input" asp-items='(SelectList)ViewData["Shifts"]!'><option value="">Todos</option></select>
+        </div>
+        <div>
+            <label for="teacherId" class="label">Profesor</label>
+            <select id="teacherId" name="teacherId" class="input" asp-items='(SelectList)ViewData["Teachers"]!'><option value="">Todos</option></select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+            <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </div>
+</form>
+<form method="post" asp-action="CopyFrom" class="card mb-4">
+    <div class="card-body grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+            <label for="fromPeriod" class="label">Copiar desde el periodo</label>
+            <select id="fromPeriod" name="fromPeriod" class="input" asp-items='(SelectList)ViewData["Periods"]!'></select>
+        </div>
+        <div>
+            <label for="toPeriod" class="label">Hacia el periodo</label>
+            <input id="toPeriod" name="toPeriod" class="input" value="@ViewData["ActivePeriod"]" maxlength="20" required />
+        </div>
+        <div>
+            <label for="capacity" class="label">Cupos por horario</label>
+            <input id="capacity" name="capacity" type="number" min="0" max="1000" value="30" class="input" required />
+        </div>
+        <div>
+            <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-copy"></i> Copiar horarios</button>
+        </div>
+    </div>
+</form>
+<div class="card">
+    <div class="overflow-x-auto">
+        <table class="table">
+            <thead>
+                <tr><th>Curso</th><th>Ciclo</th><th>Turno</th><th>Aula</th><th>Profesor</th><th>Horario</th><th>Cupos disponibles</th><th class="text-right">Acciones</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="font-bold">@c.Course?.Name</td>
+                        <td>@c.Cycle</td>
+                        <td>@c.Shift?.Name</td>
+                        <td>@c.ClassRoom?.Name</td>
+                        <td>@(c.Teacher?.FullName ?? "Por asignar")</td>
+                        <td class="whitespace-nowrap">@c.StartTime.ToString(@"hh\:mm")–@c.EndTime.ToString(@"hh\:mm")</td>
+                        <td class="@(c.Capacity == 0 ? "font-bold text-red-600" : "")">@c.Capacity</td>
+                        <td class="whitespace-nowrap text-right">
+                            <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-secondary btn-sm"><i class="fa-solid fa-pen"></i> Editar</a>
+                            <partial name="_DeleteButton" model='new DeleteButtonModel(c.Id, "¿Eliminar este horario?")' />
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="py-8 text-center text-slate-500">No hay registros</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

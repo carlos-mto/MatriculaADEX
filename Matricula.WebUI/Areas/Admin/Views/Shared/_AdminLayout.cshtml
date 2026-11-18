@@ -1,0 +1,90 @@
+@inject PeriodService PeriodSvc
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var period = await PeriodSvc.GetActivePeriodAsync();
+    var items = new[]
+    {
+        (Controller: "Dashboard", Label: "Panel", Icon: "fa-gauge"),
+        (Controller: "Enrollments", Label: "Matrículas", Icon: "fa-clipboard-list"),
+        (Controller: "Schedules", Label: "Horarios", Icon: "fa-calendar-days"),
+        (Controller: "Students", Label: "Alumnos", Icon: "fa-user-graduate"),
+        (Controller: "Teachers", Label: "Profesores", Icon: "fa-chalkboard-user"),
+        (Controller: "Courses", Label: "Cursos", Icon: "fa-book"),
+        (Controller: "ClassRooms", Label: "Aulas", Icon: "fa-door-open"),
+        (Controller: "Shifts", Label: "Turnos", Icon: "fa-clock"),
+        (Controller: "Settings", Label: "Configuración", Icon: "fa-gear")
+    };
+}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Administración ADEX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link href="~/favicon.png" rel="shortcut icon" type="image/x-icon">
+</head>
+
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
+    <header class="sticky top-0 z-40 bg-gradient-to-r from-[#15298e] via-[#582c8f] to-[#cf3896] shadow-lg">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <div class="flex items-center gap-3">
+                <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="shrink-0">
+                    <img class="h-10 w-auto brightness-200 grayscale" src="~/images/logo_adex.svg" alt="ADEX">
+                </a>
+                <span class="badge bg-accent text-brand-900" title="Periodo activo"><i class="fa-solid fa-calendar-check mr-1"></i>Periodo @period</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-white sm:gap-5">
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="font-bold hover:text-accent"><i class="fa-solid fa-arrow-left mr-1"></i>Ir a Matrícula</a>
+                <span class="text-white/80"><i class="fa-solid fa-user mr-1"></i>@User.Identity?.Name</span>
+                <form method="post" asp-area="" asp-controller="Account" asp-action="Logout">
+                    <button type="submit" class="btn btn-sm text-white ring-1 ring-white/60 hover:bg-white/10">Cerrar sesión</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:gap-6 lg:py-6">
+        <nav aria-label="Administración" class="flex gap-1 overflow-x-auto rounded-xl bg-white p-2 shadow lg:sticky lg:top-24 lg:w-60 lg:shrink-0 lg:flex-col lg:self-start lg:overflow-visible">
+            @foreach (var item in items)
+            {
+                var active = string.Equals(controller, item.Controller, StringComparison.OrdinalIgnoreCase);
+                <a asp-area="Admin" asp-controller="@item.Controller" asp-action="Index"
+                   class="flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-bold whitespace-nowrap @(active ? "bg-brand-600 text-white" : "text-slate-700 hover:bg-slate-100")"
+                   aria-current="@(active ? "page" : null)">
+                    <i class="fa-solid @item.Icon w-5 text-center"></i>@item.Label
+                </a>
+            }
+        </nav>
+
+        <main class="min-w-0 flex-1">
+            @if (TempData["Success"] is string ok)
+            {
+                <div class="alert-success mb-4" role="status">@ok</div>
+            }
+            @if (TempData["Error"] is string err)
+            {
+                <div class="alert-error mb-4" role="alert">@err</div>
+            }
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h1 class="text-2xl font-extrabold text-brand-700">@ViewData["Title"]</h1>
+                <div class="flex gap-2">@await RenderSectionAsync("Actions", required: false)</div>
+            </div>
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
