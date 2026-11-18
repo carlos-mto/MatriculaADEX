@@ -39,6 +39,8 @@ body {
 }
 
 .logo {
+    height: 48px;
+    width: auto;
     filter: brightness(200%) grayscale(100%) brightness(200%)
 }
 
