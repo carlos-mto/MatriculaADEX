@@ -336,3 +336,66 @@ label.error_course {
 .error_course {
     display: none
 }
+
+.banner-2026 {
+    max-width: 420px;
+    padding: 48px 40px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0b2a8a 0%, #1e4fd8 100%);
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(11, 42, 138, 0.35);
+    font-family: 'Lato', sans-serif;
+}
+
+.banner-logo {
+    height: 56px;
+    margin-bottom: 24px;
+}
+
+.banner-kicker {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.banner-title {
+    margin: 0 0 12px;
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.banner-title span {
+    color: #ffd200;
+}
+
+.banner-subtitle {
+    margin-bottom: 24px;
+    font-size: 1.05rem;
+    opacity: 0.9;
+}
+
+.banner-benefits {
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+}
+
+.banner-benefits li {
+    margin-bottom: 10px;
+}
+
+.banner-benefits i {
+    margin-right: 8px;
+    color: #ffd200;
+}
+
+.banner-footer {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #ffd200;
+}
